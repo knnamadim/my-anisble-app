@@ -1,0 +1,27 @@
+- name: Deploy app container
+  hosts: web
+  become: yes
+  vars:
+    container_name: myapp
+  tasks:
+    - name: Ensure community.docker collection is available (run locally if needed)
+      ansible.builtin.debug: msg="Make sure community.docker is installed: ansible-galaxy collection install community.docker"
+
+    - name: Pull image
+      community.docker.docker_image:
+        name: "{{ image }}"
+        source: pull
+
+    - name: Stop/remove existing container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
+        force_kill: true
+
+    - name: Start new container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image }}"
+        ports:
+          - "8080:8080"
+        restart_policy: always

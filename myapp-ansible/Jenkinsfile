@@ -1,0 +1,31 @@
+pipeline {
+  agent any
+  environment {
+    REGISTRY = 'registry.example.com'
+    IMAGE = "${REGISTRY}/myapp:${env.BUILD_NUMBER}"
+  }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Build') { steps { sh 'mvn -B -DskipTests package' } }
+    stage('Docker Build & Push') {
+      steps {
+        sh "docker build -t ${IMAGE} ."
+        withCredentials([usernamePassword(credentialsId: 'docker-reg-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin registry.example.com"
+          sh "docker push ${IMAGE}"
+        }
+      }
+    }
+    stage('Deploy via Ansible') {
+      steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'ansible-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+          sh "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventories/production playbooks/deploy-docker.yml --private-key $SSH_KEY -e image=${IMAGE}"
+        }
+      }
+    }
+  }
+  post {
+    success { echo 'Deployed successfully' }
+    failure { echo 'Deploy failed' }
+  }
+}

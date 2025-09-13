@@ -1,0 +1,15 @@
+- hosts: web
+  become: yes
+  tasks:
+    - name: Copy WAR to Tomcat webapps
+      copy:
+        src: target/myapp.war
+        dest: /opt/tomcat/webapps/myapp.war
+        owner: tomcat
+        group: tomcat
+        mode: '0644'
+
+    - name: Restart Tomcat
+      systemd:
+        name: tomcat
+        state: restarted

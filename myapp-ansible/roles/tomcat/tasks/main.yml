@@ -1,0 +1,39 @@
+- name: Ensure Java is installed
+  package:
+    name: openjdk-11-jdk
+    state: present
+
+- name: Create Tomcat group
+  group:
+    name: tomcat
+    state: present
+
+- name: Create Tomcat user
+  user:
+    name: tomcat
+    group: tomcat
+    shell: /bin/false
+    system: yes
+
+- name: Download Tomcat
+  get_url:
+    url: https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.73/bin/apache-tomcat-9.0.73.tar.gz
+    dest: /tmp/apache-tomcat.tar.gz
+
+- name: Extract Tomcat
+  unarchive:
+    src: /tmp/apache-tomcat.tar.gz
+    dest: /opt/
+    remote_src: yes
+    creates: /opt/apache-tomcat-9.0.73
+
+- name: Symlink tomcat
+  file:
+    src: /opt/apache-tomcat-9.0.73
+    dest: /opt/tomcat
+    state: link
+
+- name: Ensure Tomcat service exists
+  copy:
+    src: tomcat.service
+    dest: /etc/systemd/system/tomcat.service
