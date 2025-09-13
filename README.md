@@ -77,4 +77,4 @@ This project is designed as a portfolio demonstration. In production, consider:
 ----
 ## Author
 - Kimberly Nnamadim, DevOps & CX Enthusiast 
-GitHub: [[your-link-here](https://github.com/knnamadim)]
+GitHub: [[github.com/knnamadim](https://github.com/knnamadim)]
